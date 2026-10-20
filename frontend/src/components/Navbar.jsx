@@ -193,11 +193,11 @@ export default function Navbar() {
           }}>
                ALL RENTALS
             </Link>
-            <Link to={"/property-management"} className="font-light hover:text-orange-500"  style={{
+            {/* <Link to={"/property-management"} className="font-light hover:text-orange-500"  style={{
             fontFamily: "Quicksand, sans-serif",
           }}>
                PROPETY MANAGEMENTS
-            </Link>
+            </Link> */}
 
             <Link to={"/about-us"} className="font-light hover:text-orange-500"  style={{
             fontFamily: "Quicksand, sans-serif",
