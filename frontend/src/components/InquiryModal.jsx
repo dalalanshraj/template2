@@ -3,33 +3,23 @@ import { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { IoMdClose } from "react-icons/io";
-import emailjs from "@emailjs/browser";
 
-export default function InquiryModal({
-  propertyId,
-  listing,
-   arrival,
-  departure,
-  onClose,
-}) {
-   const [form, setForm] = useState({
+export default function InquiryModal({ propertyId, onClose }) {
+  const [form, setForm] = useState({
     name: "",
     email: "",
     phone: "",
+    Arrival: null,
+    Departure: null,
+    Adults: "",
+    Kids: "",
     message: "",
   });
+
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
   const [propertyTitle, setPropertyTitle] = useState("");
-
- useEffect(() => {
-  setForm((prev) => ({
-    ...prev,
-    Arrival: arrival || null,
-    Departure: departure || null,
-  }));
-}, [arrival, departure]);
 
   // 🔒 Lock background scroll
   useEffect(() => {
@@ -43,152 +33,58 @@ export default function InquiryModal({
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-const handleSubmit = async (e) => {
-
-  e.preventDefault();
-
-  setLoading(true);
-  setError("");
-  setSuccess("");
-
-  try {
-    // Validation
-    if (!propertyId) {
-      throw new Error("Property ID missing");
-    }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    setSuccess("");
 
     if (!form.Arrival || !form.Departure) {
-      throw new Error("Please select dates");
+      setError("Please select arrival and departure dates");
+      setLoading(false);
+      return;
     }
 
-    // =====================================
-    // DATABASE SAVE
-    // =====================================
+    try {
+      const res = await api.post("/inquiries", {
+        ...form,
+        Arrival: form.Arrival.toISOString(),
+        Departure: form.Departure.toISOString(),
+        propertyId,
+      });
 
-    const payload = {
-      property: propertyId,
+      setPropertyTitle(res.data.inquiry.property.title);
+      setSuccess("Inquiry sent successfully!");
 
-      name: form.name,
-      email: form.email,
-      phone: form.phone,
-      message: form.message,
+      setForm({
+        name: "",
+        email: "",
+        phone: "",
+        Arrival: null,
+        Departure: null,
+        Adults: "",
+        Kids: "",
+        message: "",
+      });
 
-      Arrival: arrival,
-        Departure: departure,
+      setTimeout(() => {
+        onClose();
+      }, 1500);
 
-      Adults: String(form.Adults || "1"),
-      Kids: String(form.Kids || "0"),
-    };
-
-    // console.log("PAYLOAD:", payload);
-
-    const res = await api.post("/inquiries", payload);
-
-    // console.log("DB SUCCESS:", res.data);
-
-    // =====================================
-    // EMAILJS TEST
-    // =====================================
-
-   const toEmail = [
-  listing?.property?.email,
-  listing?.property?.altEmail,
-]
-  .filter(Boolean)
-  .join(",");
-
-    // console.log("TO EMAIL:", toEmail);
-
-    if (!toEmail) {
-      throw new Error("No recipient email found");
+    } catch (err) {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
-const propertyName =
-  listing?.property?.title ||
-  res?.data?.inquiry?.property?.property?.title ||
-  "Property";
-  
-    const templateParams = {
-      to_email: toEmail,
-
-      name: form.name,
-      email: form.email,
-      phone: form.phone,
-
- Arrival: arrival.toLocaleDateString("en-US", {
-  month: "long",
-  day: "numeric",
-  year: "numeric",
-}),
-
-Departure: departure.toLocaleDateString("en-US", {
-  month: "long",
-  day: "numeric",
-  year: "numeric",
-}),
-
-
-      adults: form.Adults || "1",
-      kids: form.Kids || "0",
-
-      message: form.message || "",
-      property: propertyName,
-    };
-
-    // console.log("EMAIL PARAMS:", templateParams);
-
-    const emailRes = await emailjs.send(
-      "service_dgkqbam",
-      "template_jk0rjyg",
-      templateParams,
-      "WEcEr8ZPeRbDNB9Ay"
-    );
-
-    // console.log("EMAIL SUCCESS:", emailRes);
-
-    // =====================================
-    // SUCCESS
-    // =====================================
-
-    setSuccess("Inquiry sent successfully!");
-
-    setForm({
-      name: "",
-      email: "",
-      phone: "",
-      Arrival: null,
-      Departure: null,
-      Adults: "",
-      Kids: "",
-      message: "",
-    });
-
-    setTimeout(() => {
-      onClose();
-    }, 1500);
-
-  } catch (err) {
-    // console.error("FULL ERROR:", err);
-
-
-    setError(
-      err?.text ||
-      err?.message ||
-      err?.response?.data?.message ||
-      err?.response?.data?.error ||
-      "Something went wrong"
-    );
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-start z-[9999] pt-34 px-4 overflow-y-auto"
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-start z-100 pt-34 px-4 overflow-y-auto"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl w-[40%] h-[77%]  p-8 relative mt-33 shadow-2xl border"
+        className="bg-white rounded-2xl w-[50%] h-[87%]  p-8 relative mt-16 shadow-2xl border"
         onClick={(e) => e.stopPropagation()}
       >
         {/* CLOSE */}
@@ -199,7 +95,9 @@ Departure: departure.toLocaleDateString("en-US", {
           <IoMdClose />
         </button>
 
-        <h2 className="text-3xl font-bold mb-5 text-gray-800">Send Inquiry</h2>
+        <h2 className="text-3xl font-bold mb-5 text-gray-800">
+          Send Inquiry
+        </h2>
 
         {/* SUCCESS */}
         {success && (
@@ -216,6 +114,7 @@ Departure: departure.toLocaleDateString("en-US", {
         )}
 
         <form onSubmit={handleSubmit} noValidate className="space-y-1">
+
           {/* NAME + EMAIL */}
           <div className="grid grid-cols-2 gap-4">
             <input
@@ -251,70 +150,29 @@ Departure: departure.toLocaleDateString("en-US", {
           />
 
           {/* DATE PICKER */}
-          <div className="grid grid-cols-2 gap-4 items-start">
-            {/* ARRIVAL */}
-            <div className="w-full min-w-0">
-              <DatePicker
-                selected={form.Arrival}
-                onChange={(date) => setForm({ ...form, Arrival: date })}
-                placeholderText="Arrival Date"
-                dateFormat="dd-MM-yyyy"
-                minDate={new Date()}
-                popperPlacement="bottom-start"
-                popperClassName="z-[999999]"
-                showPopperArrow={false}
-                wrapperClassName="w-full"
-                calendarClassName="shadow-xl border rounded-xl"
-                popperModifiers={[
-                  {
-                    name: "flip",
-                    enabled: false,
-                  },
-                ]}
-                className="
-        w-full
-        min-w-0
-        h-[52px]
-        border border-gray-300
-        px-4
-        rounded-xl
-        outline-none
-        focus:ring-2 focus:ring-blue-500
-      "
-              />
-            </div>
+          <div className="grid grid-cols-2 gap-1">
+            <DatePicker
+              selected={form.Arrival}
+              onChange={(date) =>
+                setForm({ ...form, Arrival: date })
+              }
+              placeholderText="Arrival Date"
+              className="w-full border border-gray-300 p-3 rounded-xl"
+              dateFormat="dd-MM-yyyy"
+              minDate={new Date()}
 
-            {/* DEPARTURE */}
-            <div className="w-full min-w-0">
-              <DatePicker
-                selected={form.Departure}
-                onChange={(date) => setForm({ ...form, Departure: date })}
-                placeholderText="Departure Date"
-                dateFormat="dd-MM-yyyy"
-                minDate={form.Arrival || new Date()}
-                popperPlacement="bottom-start"
-                popperClassName="z-[999999]"
-                showPopperArrow={false}
-                wrapperClassName="w-full"
-                calendarClassName="shadow-xl border rounded-xl"
-                popperModifiers={[
-                  {
-                    name: "flip",
-                    enabled: false,
-                  },
-                ]}
-                className="
-        w-full
-        min-w-0
-        h-[52px]
-        border border-gray-300
-        px-4
-        rounded-xl
-        outline-none
-        focus:ring-2 focus:ring-blue-500
-      "
-              />
-            </div>
+            />
+
+            <DatePicker
+              selected={form.Departure}
+              onChange={(date) =>
+                setForm({ ...form, Departure: date })
+              }
+              placeholderText="Departure Date"
+              className="w-full border border-gray-300 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+              dateFormat="dd-MM-yyyy"
+              minDate={form.Arrival || new Date()}
+            />
           </div>
 
           {/* GUESTS */}
@@ -356,11 +214,10 @@ Departure: departure.toLocaleDateString("en-US", {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-3 cursor-pointer rounded-xl text-white font-semibold shadow-md transition ${
-              loading
+            className={`w-full py-3 cursor-pointer rounded-xl text-white font-semibold shadow-md transition ${loading
                 ? "bg-gray-400"
                 : "bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900"
-            }`}
+              }`}
           >
             {loading ? "Sending..." : "Submit Inquiry"}
           </button>

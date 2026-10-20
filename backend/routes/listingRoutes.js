@@ -1,5 +1,6 @@
 import express from "express";
 import Listing from "../models/Listing.js";
+import Deal from "../models/Deal.js";
 import {
   createListing,
   getAllListings,
@@ -28,7 +29,8 @@ import {
   toggleListingStatus,
   getPublishedListings,
   getAllReviews,
-
+getCommunityListings,
+getAllCommunities,
   
 
 } from "../controllers/listingController.js";
@@ -79,6 +81,7 @@ const upload = multer({
 
 router.get("/published", getPublishedListings);
 router.get("/reviews", getAllReviews); 
+router.get("/communities/all", getAllCommunities);
 router.get("/public", async (req, res) => {
   try {
     const listings = await Listing.find().select("_id property.title");
@@ -91,6 +94,8 @@ router.get("/public", async (req, res) => {
 router.post("/", createListing);
 
 router.get("/", isAuth, isAdmin, getAllListings);
+router.get("/:id", getListingById); 
+router.delete("/:id", deleteListing);
 router.get("/:id", getListingById); 
 router.delete("/:id", deleteListing);
  
@@ -138,8 +143,11 @@ router.put(
   isAdmin,
   toggleListingStatus
 );
-
-
+ router.get(
+  "/community/:community",
+  getCommunityListings
+);
+ 
 
 
 export default router;

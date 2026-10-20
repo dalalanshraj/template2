@@ -1,90 +1,205 @@
-import React from "react";
-import { FaFacebookF, FaTwitter } from "react-icons/fa";
-import { MdEmail } from "react-icons/md";
-import logoIme from "../assets/logo/BEACH2.png"; // Default logo
+import { useEffect, useState } from "react";
+import api from "../api/axios";
 import { Link } from "react-router-dom";
+import { MdEmail } from "react-icons/md";
 
-const Footer = () => {
+import { FaFacebookF, FaInstagram, FaLinkedinIn } from "react-icons/fa";
+
+import { FiMail, FiPhone } from "react-icons/fi";
+
+import { HiOutlineLocationMarker } from "react-icons/hi";
+
+export default function Footer({ listingId }) {
+  const [contactNumber, setContactNumber] = useState("");
+  const [email, setEmail] = useState("");
+
+  useEffect(() => {
+    if (!listingId) return;
+
+    api
+      .get(`/listings/${listingId}`)
+      .then((res) => {
+        setContactNumber(res.data?.property?.altPhone || "");
+
+        setEmail(res.data?.property?.altEmail || "");
+      })
+      .catch(console.log);
+  }, [listingId]);
+
+  const quickLinks = [
+    {
+      name: "Home",
+      to: "/",
+    },
+    {
+      name: "Vacation Rentals",
+      to: "/properties",
+    },
+    // {
+    //   name: "Real Estate",
+    //   to: "/real-estate",
+    // },
+    {
+      name: "Property Management",
+      to: "/property-management",
+    },
+    {
+      name: "About",
+      to: "/about",
+    },
+    {
+      name: "Contact",
+      to: "/contact",
+    },
+  ];
+
   return (
-    <footer className="bg-[#467FF7] text-white py-10 px-6 md:px-16">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-        {/* Left Section */}
-        <div>
-          <Link to={"/"} className="flex items-center space-x-3">
-            <img
-              src={logoIme}
-              alt="Logo"
-              className="w-49"
-            />
-           
-          </Link>
-        </div>
+    <footer className="bg-white">
+      <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-10">
+        {/* Top */}
 
-        {/* Middle Section - Useful Links */}
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Useful Links</h2>
-          <ul className="space-y-2">
-             <li><a href="/" className="hover:text-gray-200">Home</a></li>
-            <li><a href="/about-us" className="hover:text-gray-200">About</a></li>
-            <li><a href="/properties" className="hover:text-gray-200">Properties</a></li>
-            <li><a href="/reviews" className="hover:text-gray-200">Reviews</a></li>
-            {/* <li>
-              <a href="#" className="hover:text-gray-200">
-                Privacy Policy
-              </a>
-            </li> */}
-            {/* <li>
-              <a href="#" className="hover:text-gray-200">
+        <div className="py-16">
+          <div className=" grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 ">
+            {/* ===================================
+                    Logo
+            =================================== */}
+
+            <div>
+              <Link to="/">
+                 <h1 className="">LOGO</h1>
+              </Link>
+
+              <div className="mt-8">
+                <div className="flex items-start gap-3">
+                  <HiOutlineLocationMarker
+                    size={22}
+                    className="text-[#4CAf50] mt-1"
+                  />
+
+                  <p className=" text-gray-600 leading-8 text-[17px] ">
+                    34990 Emerald Coast Pkwy, Suite 300, Destin, FL 32541
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* CONTACT STARTS HERE */}
+            {/* ===================================
+                    Contact
+            =================================== */}
+
+            <div>
+              <h3
+                className=" text-[20px] font-semibold text-[#1B1B1B] mb-8 "
+                style={{
+                  fontFamily: '"Montserrat", sans-serif',
+                }}
+              >
                 Contact
-              </a>
-            </li> */}
-          </ul>
-        </div>
+              </h3>
 
-        {/* Right Section - Menu */}
-        <div>
-          <div className="flex items-center justify-between md:justify-start md:space-x-4 mb-4">
-            {/* <h2 className="text-xl font-semibold">Location</h2> */}
-            {/* <Link to="/admin/login">
-              <button className="bg-[#F8F812] text-black hover:bg-[#1B252F] hover:text-white text-sm font-medium px-4 py-2 rounded shadow flex items-center gap-2">
-                <MdEmail />Admin Login 
-              </button>
-            </Link> */}
+              <div className="space-y-5"></div>
+
+              {/* Social Icons */}
+
+              <div className="flex gap-4 mt-10">
+                <a
+                  href="#"
+                  className=" w-7 h-7 rounded-full bg-[#4CAf50] text-white flex items-center justify-center 
+                  hover:bg-[#00796B]
+                  duration-300
+                "
+                >
+                  <FiMail />
+                </a>
+                <a
+                  href="#"
+                  className=" w-7 h-7 rounded-full bg-[#4CAf50] text-white flex items-center justify-center hover:bg-[#00796B]
+                  duration-300 "
+                >
+                  <FiPhone />
+                </a>
+
+                <a
+                  href="#"
+                  className=" w-7 h-7 rounded-full bg-[#4CAf50] text-white flex items-center justify-center 
+                  hover:bg-[#00796B]
+                  duration-300 "
+                >
+                  <FaFacebookF />
+                </a>
+
+                <a
+                  href="#"
+                  className=" w-7 h-7 rounded-full bg-[#4CAf50] text-white flex items-center justify-center hover:bg-[#00796B]
+                  duration-300 "
+                >
+                  <FaInstagram />
+                </a>
+
+                <a
+                  href="#"
+                  className=" w-7 h-7 rounded-full bg-[#4CAf50] text-white flex items-center justify-center hover:bg-[#00796B]
+                  duration-300 "
+                >
+                  <FaLinkedinIn />
+                </a>
+              </div>
+            </div>
+
+            {/* ===================================
+                    Quick Links
+            =================================== */}
+
+            <div>
+              <h3
+                className=" text-[20px] font-semibold text-[#1B1B1B] mb-8 "
+                style={{
+                  fontFamily: '"Montserrat", sans-serif',
+                }}
+              >
+                Quick Links
+              </h3>
+
+              <div className="space-y-1">
+                {quickLinks.map((item) => (
+                  <Link
+                    key={item.name}
+                    to={item.to}
+                    className=" block border-b border-gray-200 pb-1 text-gray-700 hover:text-[#00796B] transition "
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Footer About */}
           </div>
-          <ul className="space-y-2">
-           
-            {/* <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d860.4813506066332!2d-86.41851143180864!3d30.38147609842223!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x88915b54a4223add%3A0x3ea02b1911b455dd!2s3290%20Scenic%20Hwy%2098%20103%20B%2C%20Destin%2C%20FL%2032541%2C%20USA!5e0!3m2!1sen!2sin!4v1778510969964!5m2!1sen!2sin" width="440" height="150" ></iframe> */}
-          </ul>
-        </div>
-      </div>
 
-      {/* Bottom Section */}
-      <div className="mt-10 border-t border-white/30 pt-6 flex flex-col md:flex-row items-center justify-between">
-        <p className="text-sm text-center md:text-left">
-      © 2026 <a href="https://www.digifyamerica.com/">Digify America.</a>  All rights reserved.
-        </p>
-         <Link to="/admin/login">
-              <button className=" text-white hover:bg-[#1B252F] hover:text-white text-sm font-medium px-4 py-2 rounded  flex items-center gap-2">
-                <MdEmail /> Login 
-              </button>
-            </Link>
-        {/* <div className="flex space-x-4 mt-3 md:mt-0">
-          <a
-            href="#"
-            className="bg-white/20 hover:bg-white/30 p-3 rounded-full transition-all"
-          >
-            <FaFacebookF />
-          </a>
-          <a
-            href="#"
-            className="bg-white/20 hover:bg-white/30 p-3 rounded-full transition-all"
-          >
-            <FaTwitter />
-          </a>
-        </div> */}
+          {/* Bottom Divider */}
+
+          {/* ===================================
+                  Bottom Footer
+          =================================== */}
+          <div className="border-b-1 text-gray-300"></div>
+          <Link to="/admin/login">
+            <button className=" text-black hover:bg-[#1B252F] hover:text-white text-sm font-medium px-4 py-2 rounded  flex items-center gap-2">
+              <MdEmail /> Owner Login
+            </button>
+          </Link>
+          <div className="   items-center justify-between gap-5 text-center md:text-left ">
+            {/* Copyright */}
+
+            <p className=" text-gray-500 text-sm md:text-base text-center ">
+              © {new Date().getFullYear()} Digify America Rentals. All Rights
+              Reserved.
+            </p>
+
+            {/* Powered By */}
+          </div>
+        </div>
       </div>
     </footer>
   );
-};
-
-export default Footer;
+}

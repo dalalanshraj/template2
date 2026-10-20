@@ -1,221 +1,294 @@
-import { useState, useEffect } from "react";
-import { useLocation, Link } from "react-router-dom";
-import { Phone, Menu, X, ChevronDown } from "lucide-react";
-import api from "../api/axios.js";
-import logoIme from "../assets/logo/BEACH2.png";
-import logoScrolled from "../assets/logo/BEACH.png";
+import { useEffect, useState } from "react";
+import { Menu, X, ChevronDown } from "lucide-react";
+import { Link } from "react-router-dom";
 
-const Navbar = () => {
-  const location = useLocation();
+import { ChevronRight } from "lucide-react";
 
+export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState(null);
-  const [mobileMenu, setMobileMenu] = useState(false);
-  const [mobileDropdown, setMobileDropdown] = useState(null);
-  const [communities, setCommunities] = useState([]);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  if (location.pathname.startsWith("/admin")) return null;
-
-  useEffect(() => {
-    const fetchCommunities = async () => {
-      try {
-        const res = await api.get("/listings/published");
-        setCommunities(res.data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchCommunities();
-  }, []);
+  const [openMobileDropdown, setOpenMobileDropdown] = useState(null);
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
+      setIsScrolled(window.scrollY > 80);
     };
 
     window.addEventListener("scroll", handleScroll);
 
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const dropdowns = {
-    // ABOUT: [{ name: "ABOUT", }],
-    COMMUNITIES: [
-      {
-        name: "",
-        link: "/community/crystal-sands",
-      },
-      {
-        name: "",
-        link: "/community/mediterranea",
-      },
-    ],
-  };
 
   const menuItems = [
-    { name: "HOME", link: "/" },
-    { name: "ABOUT", link: "/about-us" },
-    // { name: "COMMUNITIES" },
-    { name: "PROPERTIES", link: "/properties" },
-    { name: "GALLERY", link: "/gallery" },
-    { name: "REVIEWS", link: "/reviews" },
+    {
+      title: "Vacation Rentals",
+      links: [
+        {
+          heading: "Popular Destinations",
+          items: [
+            "Panama City Beach",
+            "Destin",
+            "Miramar Beach",
+            "30A",
+            "Fort Walton Beach",
+          ],
+        },
+        {
+          heading: "Property Types",
+          items: [
+            "Beach Condos",
+            "Luxury Villas",
+            "Pet Friendly",
+            "Private Pools",
+            "Family Homes",
+          ],
+        },
+      ],
+    },
+
+    {
+      title: "Real Estate",
+      links: [
+        {
+          heading: "Buy",
+          items: ["Homes", "Condos", "Townhomes", "Waterfront"],
+        },
+        {
+          heading: "Sell",
+          items: ["Home Valuation", "Agent Services", "Market Trends"],
+        },
+      ],
+    },
+
+    {
+      title: "Property Management",
+      links: [
+        {
+          heading: "Owner Services",
+          items: ["Marketing", "Cleaning", "Maintenance", "Guest Support"],
+        },
+      ],
+    },
   ];
 
   return (
-    <header
-      className={`fixed w-full z-50 transition-all duration-300 ${
-        isScrolled ? "bg-white shadow-md" : "bg-transparent"
-      }`}
-    >
-      {/* TOP BAR */}
-      <div className="flex justify-between items-center px-4 md:px-10 py-3">
-        {/* LOGO */}
-        <Link to="/">
-          <img
-            src={isScrolled ? logoScrolled : logoIme}
-            className="w-40 md:w-44 transition-all duration-300"
-            alt="logo"
-          />
-        </Link>
+    <>
+      <header
+  className={`
+    fixed
+    top-5
+    left-1/2
+    -translate-x-1/2
+    z-50
+    w-[95%]
+    transition-all
+    duration-500
+    ${
+      isScrolled
+        ? "top-[-10px] w-full rounded-none bg-white shadow-xl"
+        : "rounded-3xl bg-white/60 backdrop-blur-xl shadow-lg"
+    }
+  `}
+>
+        <div
+          className={`max-w-7xl mx-auto flex items-center justify-between transition-all duration-500 ${
+            isScrolled ? "px-7 py-5" : "px-8 py-5"
+          }`}
+        >
+          {/* Logo */}
 
-        {/* DESKTOP CONTACT */}
-        <div className="hidden md:flex items-center gap-4 bg-gradient-to-r from-[#0B63F6] to-[#467FF7] px-3 py-2 rounded-2xl shadow-lg">
-          {/* Animated Phone Icon */}
-          <div className="w-10 h-10 rounded-full border-2 border-white flex items-center justify-center animate-pulse">
-            <Phone className="text-white w-5 h-5 animate-bounce" />
-          </div>
+          <Link to="/">
+            <h1
+              className={`transition-all duration-500 ${
+                isScrolled ? "h-10 text-green-500 text-[20px]" : "h-14"
+              }`}> LOGO
+           </h1>
+          </Link>
 
-          {/* Divider */}
-          <div className="w-[1px] h-12 bg-white/50"></div>
+          {/* Desktop Menu */}
 
-          {/* Text */}
-          <div>
-            <p className="text-sm text-white/80 leading-none mb-1">
-              Call Today
-            </p>
+          <nav className="hidden lg:flex items-center gap-10 navbar-font" >
+            {/* {menuItems.map((menu, index) => (
+              <div key={index} className="relative group">
+                <button className="flex items-center gap-1 font-medium text-[15px] hover:text-orange-500 duration-300">
+                  {menu.title}
 
-            <a
-              href="tel:4042756533"
-              className="text-1xl font-bold text-white hover:text-gray-200 transition"
-            >
-              +1 (631) 946-1189
+                  <ChevronDown
+                    size={16}
+                    className="group-hover:rotate-180 duration-300"
+                  />
+                </button>
+
+                 
+
+                <div
+                  className="
+        invisible
+        opacity-0
+        translate-y-6
+
+        group-hover:visible
+        group-hover:opacity-100
+        group-hover:translate-y-0
+
+        duration-300
+
+        absolute
+        left-1/2
+        -translate-x-1/2
+
+        mt-8
+
+        w-[700px]
+
+        rounded-2xl
+
+        bg-white
+
+        shadow-2xl
+
+        border
+
+        p-8
+
+        z-50
+      "
+                >
+                  <div
+                    className={`grid gap-8 ${
+                      menu.links.length === 1 ? "grid-cols-1" : "grid-cols-2"
+                    }`}
+                  >
+                    {menu.links.map((section, i) => (
+                      <div key={i}>
+                        <h3 className="font-semibold text-lg mb-5">
+                          {section.heading}
+                        </h3>
+
+                        <div className="space-y-3">
+                          {section.items.map((item, j) => (
+                            <a
+                              key={j}
+                              href="/"
+                              className="flex items-center justify-between hover:text-orange-500 duration-300 group/item"
+                            >
+                              {item}
+
+                              <ChevronRight
+                                size={16}
+                                className="opacity-0 group-hover/item:opacity-100 duration-300"
+                              />
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))} */}
+            <Link to={"/properties"} className="font-light hover:text-orange-500"  style={{
+            fontFamily: "Quicksand, sans-serif",
+          }}>
+               ALL RENTALS
+            </Link>
+            <Link to={"/property-management"} className="font-light hover:text-orange-500"  style={{
+            fontFamily: "Quicksand, sans-serif",
+          }}>
+               PROPETY MANAGEMENTS
+            </Link>
+
+            <Link to={"/about-us"} className="font-light hover:text-orange-500"  style={{
+            fontFamily: "Quicksand, sans-serif",
+          }}>
+             ABOUT US
+            </Link>
+
+            <Link to={"/contect-us"} className="font-light hover:text-orange-500"
+            style={{
+            fontFamily: "Quicksand, sans-serif",
+          }}>
+              CONTACT US
+            </Link>
+          </nav>
+
+          {/* Mobile Button */}
+
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="lg:hidden"
+          >
+            {mobileOpen ? <X size={30} /> : <Menu size={30} />}
+          </button>
+        </div>
+
+        {/* Mobile Menu */}
+
+        <div
+          className={`overflow-hidden transition-all duration-500 lg:hidden ${
+            mobileOpen ? "max-h-[800px]" : "max-h-0"
+          }`}
+        >
+          <div className="bg-white border-t">
+            {menuItems.map((menu, index) => (
+              <div key={index}>
+                <button
+                  onClick={() =>
+                    setOpenMobileDropdown(
+                      openMobileDropdown === index ? null : index,
+                    )
+                  }
+                  className="flex justify-between items-center w-full px-6 py-4"
+                >
+                  {menu.title}
+
+                  <ChevronDown
+                    size={18}
+                    className={`duration-300 ${
+                      openMobileDropdown === index ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                <div
+                  className={`overflow-hidden transition-all duration-300 ${
+                    openMobileDropdown === index ? "max-h-96" : "max-h-0"
+                  }`}
+                >
+                  {menu.links.map((section, i) => (
+                    <div key={i} className="px-10 pb-3">
+                      <h4 className="font-semibold mb-2">{section.heading}</h4>
+
+                      {section.items.map((item, j) => (
+                        <a
+                          key={j}
+                          href="/"
+                          className="block py-2 text-gray-600"
+                        >
+                          {item}
+                        </a>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            <Link to={"/about-us"} className="block px-6 py-4">
+              About
+            </Link>
+
+            <a href="/contact" className="block px-6 py-4">
+              Contact
             </a>
           </div>
         </div>
+      </header>
 
-        {/* MOBILE MENU BUTTON */}
-        <button
-          onClick={() => setMobileMenu(!mobileMenu)}
-          className={`md:hidden transition-colors duration-300 ${
-            scrolled ? "text-black" : "text-white"
-          }`}
-        >
-          {mobileMenu ? <X size={28} /> : <Menu size={28} />}
-        </button>
-      </div>
+      {/* Spacer */}
 
-      {/* DESKTOP NAV */}
-      <nav className="hidden md:flex justify-center bg-[#467FF7] text-white text-xl font-bold cursor-pointer">
-        {menuItems.map((item) => {
-          const hasDropdown = dropdowns[item.name];
-
-          return (
-            <div
-              key={item.name}
-              className="relative px-10 py-6 cursor-pointer"
-              onMouseEnter={() => hasDropdown && setOpenDropdown(item.name)}
-              onMouseLeave={() => setOpenDropdown(null)}
-            >
-              {item.link ? (
-                <Link to={item.link}>{item.name}</Link>
-              ) : (
-                <span>{item.name}</span>
-              )}
-
-              {/* DROPDOWN */}
-              {openDropdown === item.name && hasDropdown && (
-                <ul className="absolute top-full left-0 bg-blue-500 min-w-[180px] shadow-lg">
-                  {dropdowns[item.name].map((sub, i) => (
-                    <li key={i}>
-                      <Link
-                        to={sub.link}
-                        className="block px-4 py-2 hover:bg-blue-600"
-                      >
-                        {sub.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          );
-        })}
-      </nav>
-
-      {/* MOBILE NAV */}
-      {mobileMenu && (
-        <div className="md:hidden bg-[#467FF7] text-white px-4 py-4 space-y-3">
-          {menuItems.map((item) => {
-            const hasDropdown = dropdowns[item.name];
-
-            return (
-              <div key={item.name}>
-                <div
-                  className="flex justify-between items-center cursor-pointer"
-                  onClick={() =>
-                    hasDropdown
-                      ? setMobileDropdown(
-                          mobileDropdown === item.name ? null : item.name,
-                        )
-                      : setMobileMenu(false)
-                  }
-                >
-                  {item.link ? (
-                    <Link to={item.link}>{item.name}</Link>
-                  ) : (
-                    <span>{item.name}</span>
-                  )}
-
-                  {hasDropdown && <ChevronDown size={18} />}
-                </div>
-
-                {/* MOBILE DROPDOWN */}
-                {mobileDropdown === item.name && hasDropdown && (
-                  <div className="pl-4 mt-2 space-y-2">
-                    {dropdowns[item.name].map((sub, i) => (
-                      <Link
-                        key={i}
-                        to={sub.link}
-                        onClick={() => setMobileMenu(false)}
-                        className="block text-sm"
-                      >
-                        {sub.name}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-
-          {/* MOBILE CONTACT */}
-          <div className="pt-4 border-t border-white/30">
-            <p className="text-sm">Call today</p>
-            <p className="text-lg font-bold">404-275-6533</p>
-          </div>
-        </div>
-      )}
-    </header>
+      <div className="h-28"></div>
+    </>
   );
-};
-
-export default Navbar;
+}

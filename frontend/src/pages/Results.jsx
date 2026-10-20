@@ -10,6 +10,7 @@ const ResultsPage = () => {
   const [properties, setProperties] = useState([]);
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [loading, setLoading] = useState(true);
+   
   // const [deals, setDeals] = useState([]);
 
   // ==============================

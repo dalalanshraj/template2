@@ -3,17 +3,27 @@ import {
   addCalendarDate,
   removeCalendarDate,
   getCalendar,
+  createManualBooking,
+   updateManualBooking,
+  deleteManualBooking,
   blockDates,
   unblockDates,
   cleanDuplicateCalendar,
   clearCalendar,
   importICal,
+  getAllListingCalendars,
   resetICal,
+  exportICal,
+  saveICalSources,
+  mergeICalSources,
 } from "../controllers/calendarController.js";
+
 import { isAuth, isAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
+
+router.get("/all/listings", getAllListingCalendars);
 router.post("/:id/calendar", isAuth, isAdmin, addCalendarDate);
 router.delete("/:id/calendar", isAuth, isAdmin, removeCalendarDate);
 
@@ -28,12 +38,48 @@ router.get("/month", (req, res) => {
 });
 
 router.get("/:id/calendar", getCalendar);
+router.post(
+  "/:id/manual-booking",
+  isAuth,
+  isAdmin,
+  createManualBooking
+);
+router.put(
+  "/:id/manual-booking/:bookingId",
+  isAuth,
+  isAdmin,
+  updateManualBooking
+);
+
+router.delete(
+  "/:id/manual-booking/:bookingId",
+  isAuth,
+  isAdmin,
+  deleteManualBooking
+);
 router.post("/:id/calendar/block", isAuth, isAdmin, blockDates);
 router.post("/:id/calendar/unblock", isAuth, isAdmin, unblockDates);
 
 router.put("/:id/calendar/clean-duplicates", cleanDuplicateCalendar);
 router.put("/:id/calendar/clear", clearCalendar);
+router.put(
+  "/:id/calendar/ical-sources",
+  saveICalSources
+);
+router.post(
+  "/:id/calendar/merge-ical",
+  isAuth,
+  isAdmin,
+  mergeICalSources
+);
 router.post("/:id/calendar/import-ical", isAuth, isAdmin, importICal);
+
 router.put("/:id/calendar/reset-ical", resetICal);
+router.get(
+  "/:id/calendar/export-ical",
+  exportICal
+);
+
+// router.put("/:id/calendar/clear", clearCalendar);
 
 export default router;

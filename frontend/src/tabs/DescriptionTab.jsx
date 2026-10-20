@@ -1,4 +1,4 @@
-import { Editor } from "@tinymce/tinymce-react";
+ import { Editor } from "@tinymce/tinymce-react";
 import { useEffect, useRef, useState } from "react";
 import api from "../api/axios.js";
 import { useModal } from "../context/ModalContext";
@@ -9,66 +9,107 @@ export default function DescriptionTab({
   goNextTab,
 }) {
   const editorRef = useRef(null);
+
   const [loading, setLoading] = useState(false);
   const [editorReady, setEditorReady] = useState(false);
 
   const { showModal } = useModal();
 
-  useEffect(() => {
-    if (editorReady && initialData && editorRef.current) {
-      editorRef.current.setContent(initialData);
-    }
-  }, [editorReady, initialData]);
+  // =========================================
+  // SET INITIAL DESCRIPTION
+  // =========================================
 
-  const saveDescription = async () => {
-    if (!listingId) {
-      showModal("Listing not created yet");
+ useEffect(() => {
+  if (!editorReady || !editorRef.current) return;
+
+  const currentContent = editorRef.current.getContent();
+
+  // Only set initial content if editor is currently empty
+  if (!currentContent.trim() && initialData) {
+    editorRef.current.setContent(initialData);
+  }
+}, [editorReady]);
+
+  // =========================================
+  // SAVE DESCRIPTION
+  // =========================================
+
+ const saveDescription = async () => {
+  if (!listingId) {
+    showModal("Listing not created yet");
+    return;
+  }
+
+  if (!editorRef.current) {
+    showModal("Editor is not ready");
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    const content = editorRef.current.getContent();
+
+    if (!content || content.trim() === "") {
+      showModal("Description cannot be empty");
       return;
     }
 
-    try {
-      setLoading(true);
-
-      const content = editorRef.current.getContent();
-
-      if (!content || content.trim() === "") {
-        showModal("Description cannot be empty");
-        return;
+    const response = await api.put(
+      `/listings/${listingId}/description`,
+      {
+        description: content,
       }
+    );
 
-      await api.put(
-        `/listings/${listingId}/description`,
-        { description: content }
-      );
+    console.log("DESCRIPTION SAVED:", response.data);
 
-      
+    showModal("Description saved successfully");
 
-      setTimeout(() => {
-        goNextTab();
-      }, 1000);
-      return
+    setTimeout(() => {
+      goNextTab();
+    }, 500);
 
-    } catch (err) {
-      console.error(err);
-      showModal("Failed to save description");
-    } finally {
-      setLoading(false);
-    }
-  };
+  } catch (err) {
+    console.error(
+      "Description save error:",
+      err.response?.data || err
+    );
+
+    showModal(
+      err.response?.data?.message ||
+      "Failed to save description"
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
-   <div className="space-y-5">
+    <div className="space-y-5">
+
+      {/* =====================================
+          TINYMCE
+      ====================================== */}
 
       <Editor
-        apiKey="2r6x758dp6es0ii45zfw9xu5fy23suwa6g8qxoakazk9tywz"
-        onInit={(evt, editor) => {
-          editorRef.current = editor;
-          setEditorReady(true); //  very important
-        }}
-        initialValue=""
+  tinymceScriptSrc="/tinymce/tinymce.min.js"
+  onInit={(evt, editor) => {
+    editorRef.current = editor;
+    setEditorReady(true);
+  }}
+  initialValue={initialData || ""}
         init={{
           height: 350,
+
           menubar: false,
+
+          license_key: "gpl",
+
+          branding: false,
+
+          promotion: false,
+
           plugins: [
             "advlist",
             "autolink",
@@ -82,17 +123,51 @@ export default function DescriptionTab({
             "table",
             "wordcount",
           ],
+
           toolbar:
-            "undo redo | bold italic underline | alignleft aligncenter alignright | bullist numlist | link | code",
+            "undo redo | " +
+            "bold italic underline | " +
+            "alignleft aligncenter alignright | " +
+            "bullist numlist | " +
+            "link | code",
+
+          content_style: `
+            body {
+              font-family: Quicksand, sans-serif;
+              font-size: 16px;
+              line-height: 1.6;
+              padding: 10px;
+            }
+          `,
         }}
       />
 
+      {/* =====================================
+          SAVE BUTTON
+      ====================================== */}
+
       <button
+        type="button"
         onClick={saveDescription}
-        disabled={loading}
-        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded cursor-pointer"
+        disabled={loading || !editorReady}
+        className={`
+          px-6
+          py-2
+          rounded
+          text-white
+          font-medium
+          transition-all
+          
+          ${
+            loading || !editorReady
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700 cursor-pointer"
+          }
+        `}
       >
-        {loading ? "Saving..." : "Save & Continue"}
+        {loading
+          ? "Saving..."
+          : "Save & Continue"}
       </button>
 
     </div>

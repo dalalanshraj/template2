@@ -1,26 +1,63 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import api from "../api/axios.js";
-import FeaturedActivities from "../components/homeSection/FeaturedActivities";
-import DiscoverDestinSection from "../components/homeSection/DiscoverDestin";
-import DatePicker from "react-datepicker";
-import PropertyCard from "../components/PropertyCard";
-import AboutSection from "../components/homeSection/AboutSection.jsx";
-import heroVideo from "../assets/video.mp4";
-import GallerySection from "../components/gallarySection.jsx";
-import DealsCTA from "../components/DealsCTA.jsx";
+import { useEffect, useState } from "react";
 
-const HeroSection = ({ listingId }) => {
+import { CheckCircle2 } from "lucide-react";
+import api from "../api/axios.js";
+import { FaFacebookF, FaInstagram, FaMapMarkerAlt } from "react-icons/fa";
+import { TbHomeSearch } from "react-icons/tb";
+import { FaHandHoldingUsd } from "react-icons/fa";
+import { Calendar, Home, MapPin } from "lucide-react";
+import heroVideo from "../assets/hero.mp4";
+// 👆 apni hero image ka correct path lagana
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import AboutSection from "../components/homeSection/AboutSection.jsx";
+import GallerySection from "../components/gallarySection";
+import { Link, useNavigate } from "react-router-dom";
+import ThingsToDoSection from "../components/homeSection/ActivitiesSection.jsx";
+import ReviewsSection from "../components/ReviewsSection.jsx";
+import TestimonialCarousel from "../components/ReviewsSection.jsx";
+import PropertyCard from "../components/PropertyCard.jsx";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay } from "swiper/modules";
+import "swiper/css";
+import ContactSection from "../components/contactSection.jsx";
+import Properties from "./Properties.jsx";
+import HomeProperties from "../components/HomeProperties.jsx";
+
+export default function Hero({ listingId }) {
+  const [featured, setFeatured] = useState(null);
+  const [listings, setListings] = useState([]);
   const [formData, setFormData] = useState({
     checkIn: "",
     checkOut: "",
     guests: "1",
   });
-
+  const [checkIn, setCheckIn] = useState(null);
+  const [checkOut, setCheckOut] = useState(null);
+  const [bedrooms, setBedrooms] = useState("");
+  const [location, setLocation] = useState("");
+  const [isMobile, setIsMobile] = useState(false);
+  const [isMobiles, setIsMobiles] = useState(window.innerWidth < 768);
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [stickySearch, setStickySearch] = useState(false);
   const navigate = useNavigate();
-  const [listings, setListings] = useState([]);
+  useEffect(() => {
+    const handleScroll = () => {
+      setStickySearch(window.scrollY > 250);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    if (showModal) {
+      const timer = setTimeout(() => setShowModal(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showModal]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -39,12 +76,29 @@ const HeroSection = ({ listingId }) => {
     navigate(`/results?${params}`);
   };
 
+  const parseLocalDate = (dateString) => {
+    if (!dateString) return null;
+
+    const [year, month, day] = dateString.split("-");
+
+    return new Date(year, month - 1, day);
+  };
+  // ===========================
+  // FETCH FEATURED LISTING
+  // ===========================
+
   useEffect(() => {
-    if (showModal) {
-      const timer = setTimeout(() => setShowModal(false), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [showModal]);
+    api
+      .get("/listings/published")
+      .then((res) => {
+        const data = res.data || [];
+
+        setFeatured(data[0]);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
 
   useEffect(() => {
     api
@@ -55,148 +109,382 @@ const HeroSection = ({ listingId }) => {
       .catch(console.error);
   }, []);
 
-  const formatDate = (date) => {
-    if (!date) return "";
-
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-
-    return `${year}-${month}-${day}`;
-  };
-
-  const parseLocalDate = (dateString) => {
-    if (!dateString) return null;
-
-    const [year, month, day] = dateString.split("-");
-
-    return new Date(year, month - 1, day);
-  };
   return (
     <>
-      {/* HERO */}
-      <section className="relative  min-h-[70vh] md:min-h-[100vh] flex items-center justify-center text-center overflow-hidden">
-        {/* VIDEO */}
+      {/* =====================================
+                    HERO SECTION
+      ====================================== */}
+
+      <section className="relative -mt-32 w-full min-h-[828px] h-screen overflow-hidden flex items-center justify-center">
+        {/* ==========================
+      BACKGROUND VIDEO
+  ========================== */}
+
         <video
           autoPlay
           muted
           loop
           playsInline
-          className="absolute inset-0 w-full h-full object-cover"
+          preload="auto"
+          className="absolute inset-0 w-full h-full object-cover object-center"
         >
           <source src={heroVideo} type="video/mp4" />
         </video>
 
-        {/* OVERLAY */}
-        <div className="absolute inset-0 bg-black/10"></div>
+        {/* ==========================
+      OVERLAY
+  ========================== */}
 
-        {/* CONTENT */}
-        <div className="relative mt-30 z-10 text-white px-4 w-full max-w-6xl">
-          {/* HEADING */}
-         <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-semibold mb-4 leading-tight">
-  Experience the Beauty of 30A
-</h1>
+        <div className="absolute inset-0 bg-black/35 z-[1]" />
 
-<p className="text-sm sm:text-base md:text-lg mb-6 md:mb-10">
-  Stay at Beach Therapy 30A and enjoy pristine beaches, scenic trails, and the charm of Grayton Beach.
-</p>
+        {/* ==========================
+      CONTENT
+  ========================== */}
 
-          {/* FORM */}
-          <form
-            onSubmit={handleSearch}
-            className="bg-white text-black rounded-xl shadow-xl p-4 md:p-5  w-[95%] max-w-3xl mx-auto
-            flex flex-col md:flex-row gap-3 md:gap-10 items-stretch md:items-center"
+        <div className="relative z-10 w-full max-w-8xl mx-auto px-5 sm:px-8 lg:px-12 text-center text-white flex flex-col items-center mt-30">
+          <h1
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-[90px] text-white text-center  leading-25 mb-10"
+            style={{ fontFamily: '"Montserrat", "sans-serif"' }}
           >
-            <DatePicker
-              selected={parseLocalDate(formData.checkIn)}
-              onChange={(date) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  checkIn: formatDate(date),
-                }))
-              }
-              placeholderText="Check In"
-              className="w-full border rounded-lg px-3 py-2"
-              minDate={new Date()}
-            />
-
-            {/* CHECK OUT */}
-            <DatePicker
-              selected={parseLocalDate(formData.checkOut)}
-              onChange={(date) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  checkOut: formatDate(date),
-                }))
-              }
-              placeholderText="Check Out"
-              className="w-full border rounded-lg px-3 py-2"
-              minDate={
-                formData.checkIn ? parseLocalDate(formData.checkIn) : new Date()
-              }
-            />
-
-            {/* GUESTS */}
-            <select
-              name="guests"
-              value={formData.guests}
-              onChange={(e) =>
-                setFormData({ ...formData, guests: e.target.value })
-              }
-              className="w-full md:w-[150px] border rounded-lg px-3 py-2"
+            Explore SouthWest Florida{" "}
+            <span
+              className=""
+              style={{ fontFamily: '"Montserrat", "sans-serif"' }}
             >
-              {[...Array(10)].map((_, i) => (
-                <option key={i + 1} value={i + 1}>
-                  {i + 1} Guest{i > 0 ? "s" : ""}
-                </option>
-              ))}
-            </select>
+              Real Estate & Rentals
+            </span>
+          </h1>
 
-            {/* BUTTON */}
+          {/* <p className="font-montserrat text-white max-w-4xl mx-auto text-lg md:text-[24px]  mt-5">
+            Relax in a spacious beachfront retreat featuring wraparound
+            balconies, spectacular ocean views, and premium resort amenities.
+          </p> */}
+
+          <div
+            className={` transition-all duration-500 ease-in-out w-full max-w-6xl ${stickySearch
+                ? "fixed top-18 hidden left-1/2 -translate-x-1/2 z-[9999] bg-white shadow-2xl px-5 py-4 rounded-2xl"
+                : "relative mt-6 bg-white/20 backdrop-blur-xl rounded-2xl p-4 md:p-5"
+              } grid grid-cols-1 md:grid-cols-4 gap-6 md:gap-8 `}
+          >
+            {/* Arrival */}
+            <div className="flex items-center border rounded-xl px-4 py-3 hover:border-[#3c8a8c] transition bg-white">
+              <Calendar className="w-5 h-5 text-[#3c8a8c] mr-3" />
+
+              <DatePicker
+                selected={checkIn}
+                onChange={(date) => {
+                  setCheckIn(date);
+
+                  setFormData((prev) => ({
+                    ...prev,
+                    checkIn: date,
+                  }));
+                }}
+                minDate={new Date()}
+                placeholderText="Arrival"
+                dateFormat="MMM dd, yyyy"
+                monthsShown={isMobile ? 1 : 2}
+                showPopperArrow={false}
+                onKeyDown={(e) => e.preventDefault()}
+                onPaste={(e) => e.preventDefault()}
+                className="w-full outline-none bg-transparent text-black"
+              />
+            </div>
+
+            {/* Departure */}
+            <div className="flex items-center border rounded-xl px-4 py-3 hover:border-[#3c8a8c] transition bg-white">
+              <Calendar className="w-5 h-5 text-[#3c8a8c] mr-3" />
+
+              <DatePicker
+                selected={checkOut}
+                onChange={(date) => {
+                  setCheckOut(date);
+
+                  setFormData((prev) => ({
+                    ...prev,
+                    checkOut: date,
+                  }));
+                }}
+                disabled={!checkIn}
+                placeholderText="Departure"
+                dateFormat="MMM dd, yyyy"
+                monthsShown={isMobile ? 1 : 2}
+                showPopperArrow={false}
+                onKeyDown={(e) => e.preventDefault()}
+                onPaste={(e) => e.preventDefault()}
+                className="w-full outline-none bg-transparent text-black"
+              />
+            </div>
+
+            {/* Bedrooms */}
+            <div className="flex items-center border rounded-xl px-4 py-3 bg-white">
+              <Home className="w-5 h-5 text-[#3c8a8c] mr-3" />
+
+              <select
+                value={bedrooms}
+                onChange={(e) => setBedrooms(e.target.value)}
+                className="w-full bg-transparent outline-none text-black"
+              >
+                <option value="">Bedrooms</option>
+                <option value="1">1 Bedroom</option>
+                <option value="2">2 Bedrooms</option>
+                <option value="3">3 Bedrooms</option>
+                <option value="4">4 Bedrooms</option>
+                <option value="5">5+ Bedrooms</option>
+              </select>
+            </div>
+
+            {/* Search */}
             <button
-              type="submit"
-              className="bg-[#F8F812] text-black shadow-sm px-6 py-2 rounded-lg 
-              hover:bg-[#1B252F] hover:text-white transition w-full md:w-auto"
+              onClick={handleSearch}
+              className=" inline-flex items-center justify-center gap-3 bg-[#4CAf50] text-white font-semibold text-lg
+            px-10 py-4 rounded-xl shadow-lg transition-all duration-300 hover:bg-[#08376B] hover:shadow-2xl 
+            hover:scale-99 group
+          "
             >
-              Search
+              SEARCH RENTALS
             </button>
-          </form>
+          </div>
         </div>
       </section>
-      <div className="py-16 bg-white">
-        <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-sky-900 text-center leading-tight">
-          Available Vacation Rentals
-        </h2>
+      <HomeProperties />
 
-        <p className="text-center text-gray-500 max-w-2xl mx-auto mb-12">
-          Experience the serene allure of the coast while enjoying the comfort
-          and luxury our homes provide.
-        </p>
+      <section className="bg-white py-16 lg:py-24">
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-10">
+          {/* Top Content */}
+          <div className="grid lg:grid-cols-2 gap-12 items-start">
+            {/* Left */}
+            <div>
+              <span className="inline-block bg-[#00796B] text-white text-[9px] tracking-[2px] uppercase px-4 py-2 rounded">
+                YOUR PERFECT HOME AWAITS
+              </span>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-10">
-          {(listings || []).slice(0, 4).map((listing) => (
-            <PropertyCard key={listing._id} listing={listing} />
-          ))}
+              <h2
+                className="
+          mt-6
+          text-4xl
+          md:text-5xl
+          xl:text-6xl
+          font-light
+          leading-tight
+          text-[#222]
+        "
+                style={{ fontFamily: '"Montserrat", "sans-serif"' }}
+              >
+                Southwest Florida Real Estate and Vacation Rentals
+              </h2>
+            </div>
+
+            {/* Right */}
+
+            <div>
+              <p
+                className="
+            text-gray-600
+            text-base
+            md:text-lg
+            leading-8
+          "
+                style={{
+                  fontFamily: "Quicksand, sans-serif",
+                }}
+              >
+                My Florida Real Estate and Vacation Rentals specializes in
+                buying, selling, and renting luxury properties across Southwest
+                Florida. Whether you're searching for a beachfront retreat, a
+                golf community home, or a high-return investment property, our
+                expert team is here to guide you. From Naples to Fort Myers
+                Beach, we make finding your dream home or vacation rental
+                seamless and stress-free.
+              </p>
+
+              <button className=" group/button bg-[#4CAf50] mt-6 text-white rounded-full px-6 py-3 font-semibold flex items-center gap-2 transition-all duration-300  hover:shadow-2xl 
+            hover:scale-99 group">
+                Know More
+                <span
+                  className=" transition-transform duration-300 group-hover/button:translate-x-1 "
+                >
+                  →
+                </span>
+              </button>
+            </div>
+          </div>
+
+          {/* Bottom Section */}
+
+          <div className="grid lg:grid-cols-3 gap-8 mt-20">
+            {/* Image */}
+
+            <img
+              src="https://le-de.cdn-website.com/c5f5db73735f44758e7635e0dd9aae8f/dms3rep/multi/opt/shutterstock_2334387819_01-1920w.jpg"
+              alt=""
+              className=" h-[300px] md:h-[400px] w-full object-cover rounded-3xl "
+            />
+
+            {/* Image */}
+
+            <img
+              src="https://le-de.cdn-website.com/c5f5db73735f44758e7635e0dd9aae8f/dms3rep/multi/opt/shutterstock_2341437271_01-1920w.jpg"
+              alt=""
+              className=" h-[300px] md:h-[400px] w-full object-cover rounded-3xl "
+            />
+
+            {/* Features */}
+
+            <div className="flex flex-col justify-center">
+              <div className="pb-8 border-b">
+                <h3
+                  className="text-2xl font-semibold text-[#222]"
+                  style={{ fontFamily: '"Montserrat", "sans-serif"' }}
+                >
+                  BEACH LIFESTYLE
+                </h3>
+
+                <p className="text-gray-600 mt-3 leading-7">
+                  Steps away from the sugar-white sand and emerald waters of
+                  Scenic Highway 30A.
+                </p>
+              </div>
+
+              <div className="py-8 border-b">
+                <h3
+                  className="text-2xl font-semibold text-[#222]"
+                  style={{ fontFamily: '"Montserrat", "sans-serif"' }}
+                >
+                  FAMILY FRIENDLY
+                </h3>
+
+                <p className="text-gray-600 mt-3 leading-7">
+                  Comfortably sleeps up to 12 guests with spacious indoor and
+                  outdoor living areas.
+                </p>
+              </div>
+
+              <div className="pt-8">
+                <h3
+                  className="text-2xl font-semibold text-[#222]"
+                  style={{ fontFamily: '"Montserrat", "sans-serif"' }}
+                >
+                  PREMIUM AMENITIES
+                </h3>
+
+                <p className="text-gray-600 mt-3  ">
+                  Resort pool, beach shuttle, bicycles, modern kitchen and
+                  luxury furnishings.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="flex justify-center mt-14 ">
-          <Link to={"/properties"}>
-            <button
-              onClick={() => setOpen(true)}
-              className="px-8 py-3 rounded-full  text-black font-medium shadow-md bg-[#F8F812]  hover:bg-[#1B252F] hover:text-white hover:scale-105  transition duration-300"
-            >
-              View More →
-            </button>
-          </Link>
+      </section>
+
+
+      <section className="relative z-0 w-full min-h-[600px] sm:min-h-[560px] md:min-h-[620px] lg:min-h-[670px] flex items-center justify-center overflow-hidden ">
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          className=" absolute inset-0 z-0 w-full h-full object-cover object-center pointer-events-none "
+        >
+          <source
+            src="https://videos.pexels.com/video-files/34628886/14676299_2560_1440_24fps.mp4"
+            type="video/mp4"
+          />
+        </video>
+        <div className=" absolute inset-0 z-10 bg-black/45 " />
+        <div className="  bg-white/80 backdrop-blur-md rounded-md relative z-20 w-full max-w-[1300px] h-full mx-auto px-5 sm:px-8 md:px-12 lg:px-16 py-16 sm:py-20 md:py-24 lg:py-8 text-center text-white flex flex-col items-center justify-center ">
+          <span className="inline-block bg-[#00796B] text-white uppercase tracking-[3px] text-xs px-5 py-2 rounded-md mb-6">
+            WHY CHOOSE US
+          </span>
+          <h2
+            className=" text-black max-w-[950px] text-[30px] sm:text-[38px] md:text-[46px] md:mx-40 mx-0 lg:text-5xl leading-[1.15] font-light "
+            style={{ fontFamily: '"Montserrat", "sans-serif"' }}
+          >
+            Why Choose My Florida Real Estate & Vacation Rentals?
+          </h2>
+
+          <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-10">
+            {/* Feature 1 */}
+
+            <div className="text-center group">
+              <div className=" mx-auto w-14 h-14 rounded-full border-1 border-[#4CAf50] bg-white flex items-center justify-center transition-all duration-500    ">
+                <TbHomeSearch
+                  size={28}
+                  className="text-[#4CAf50]   duration-500"
+                />
+              </div>
+
+              <h3 className=" mt-3 text-[16px] font-semibold uppercase text-[#4CAf50] tracking-wide ">
+                Local Expertise
+              </h3>
+
+              <p className=" mt-2 text-gray-600   max-w-[330px] mx-auto ">
+                With deep knowledge of the Southwest Florida market, we provide
+                tailored guidance for buyers, sellers, investors, and vacation
+                renters.
+              </p>
+            </div>
+
+            {/* Feature 2 */}
+
+            <div className="text-center group">
+              <div className=" mx-auto w-14 h-14 rounded-full border-1 border-[#4CAf50] bg-white flex items-center justify-center transition-all duration-500   ">
+                <Home size={28} className="text-[#4CAf50]   duration-500" />
+              </div>
+
+              <h3 className=" mt-3 text-[16px] font-semibold uppercase text-[#4CAf50] tracking-wide ">
+                Prime Locations
+              </h3>
+
+              <p className=" mt-2 text-gray-600   max-w-[330px] mx-auto ">
+                From beachfront condos to golf communities and luxury homes, we
+                offer exceptional properties across Naples, Bonita Springs, Fort
+                Myers, and nearby coastal destinations.
+              </p>
+            </div>
+
+            {/* Feature 3 */}
+
+            <div className="text-center group">
+              <div className=" mx-auto w-14 h-14 rounded-full border-1 border-[#4CAf50] bg-white flex items-center justify-center transition-all duration-500    ">
+                <FaHandHoldingUsd
+                  size={28}
+                  className="text-[#4CAf50]   duration-500"
+                />
+              </div>
+
+              <h3 className=" mt-3 text-[16px] font-semibold uppercase text-[#4CAf50] tracking-wide ">
+                Property Management
+              </h3>
+
+              <p className=" mt-2 text-gray-600  max-w-[330px] mx-auto ">
+                Whether you're renting your home or booking a vacation stay, our
+                complete property management services ensure a seamless
+                experience from start to finish.
+              </p>
+            </div>
+          </div>
+
+          {/* <button className=" group/button bg-[#4CAf50] mt-6 text-white rounded-full px-6 py-3 font-semibold flex items-center gap-2 transition-all duration-300  hover:shadow-2xl 
+            hover:scale-99 group">
+              Know More
+              <span
+                className=" transition-transform duration-300 group-hover/button:translate-x-1 "
+              >
+                →
+              </span>
+            </button> */}
         </div>
-      </div>
+      </section>
 
-      <FeaturedActivities />
-      <DealsCTA />
-      {/* <AboutSection listingId="6a1606de8ee2fa44c5186e4b" /> */}
-      {/* <DiscoverDestinSection /> */}
-      <GallerySection />
+      {/* <ThingsToDoSection /> */}
 
-      {/* MODAL */}
+      {/* <GallerySection /> */}
+
+      <TestimonialCarousel />
+      <ContactSection />
       {showModal && (
         <div
           className="fixed inset-0 flex items-center justify-center 
@@ -218,6 +506,4 @@ const HeroSection = ({ listingId }) => {
       )}
     </>
   );
-};
-
-export default HeroSection;
+}

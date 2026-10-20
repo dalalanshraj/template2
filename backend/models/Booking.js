@@ -2,24 +2,23 @@ import mongoose from "mongoose";
 
 const BookingSchema = new mongoose.Schema(
   {
-   property: {
- type: mongoose.Schema.Types.ObjectId,
- ref: "Listing",
- required: true,
-},
+    property: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Listing",
+      required: true,
+    },
 
-   user: {
-  firstName: String,
-  lastName: String,
-  email: String,
-  phone: String,
-  address: String,
-  country: String,
-  city: String,
-  state: String,
-  zip: String,
-},
-
+    user: {
+      firstName: String,
+      lastName: String,
+      email: String,
+      phone: String,
+      address: String,
+      country: String,
+      city: String,
+      state: String,
+      zip: String,
+    },
 
     checkIn: {
       type: Date,
@@ -61,7 +60,8 @@ const BookingSchema = new mongoose.Schema(
       paymentIntentId: { type: String, default: null },
     },
   },
-  { timestamps: true }
+
+  { timestamps: true },
 );
 
 export default mongoose.model("Booking", BookingSchema);

@@ -53,14 +53,38 @@ console.log("👉 POPULATED RESULT:", populatedInquiry);
   }
 };
 
-// ADMIN → GET ALL
-export const getAllInquiries = async (req, res) => {
-  const inquiries = await Inquiry.find()
-    .populate("property")
-    .sort({ createdAt: -1 });
 
-  res.json(inquiries);
+ // ADMIN → GET ALL INQUIRIES AND MARK AS READ
+export const getAllInquiries = async (req, res) => {
+  try {
+    const inquiries = await Inquiry.find()
+      .populate("property")
+      .sort({ createdAt: -1 });
+
+    // Mark fetched inquiries as read
+    await Inquiry.updateMany(
+      { isRead: false },
+      { $set: { isRead: true } }
+    );
+
+    res.json(inquiries);
+  } catch (err) {
+    console.error("GET INQUIRIES ERROR:", err);
+    res.status(500).json({ message: "Failed to fetch inquiries" });
+  }
 };
+
+// ADMIN → GET UNREAD INQUIRY COUNT
+export const getUnreadInquiryCount = async (req, res) => {
+  try {
+    const count = await Inquiry.countDocuments({ isRead: false });
+    res.json({ count });
+  } catch (err) {
+    console.error("UNREAD COUNT ERROR:", err);
+    res.status(500).json({ message: "Failed to fetch unread count" });
+  }
+};
+
 
 export const deleteInquiry = async (req, res) => {
   try {

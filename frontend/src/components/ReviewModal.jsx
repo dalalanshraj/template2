@@ -109,7 +109,7 @@ export default function ReviewModal({ listingId, onClose }) {
 
           <button
             onClick={submitReview}
-            className="bg-[#185089] text-white px-6 py-2 rounded"
+            className="bg-[#00989c] text-white px-6 py-2 rounded"
           >
             Submit Review
           </button>

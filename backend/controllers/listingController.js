@@ -84,7 +84,8 @@ export const getAllListings = async (req, res) => {
         property
         status
         photos
-        reviews
+         reviews
+         amenities
         createdAt
       `)
 
@@ -151,15 +152,67 @@ export const getAllListings = async (req, res) => {
 
 export const getListingById = async (req, res) => {
   try {
-    const listing = await Listing.findById(req.params.id);
-    if (!listing) return res.status(404).json({ error: "Listing not found" });
 
-    res.json(listing);
+    const listing = await Listing.findById(
+      req.params.id
+    );
+
+    if (!listing) {
+      return res.status(404).json({
+        error: "Listing not found",
+      });
+    }
+
+    const today = new Date();
+
+    const deal = await Deal.findOne({
+      listingId: listing._id,
+      displayFrom: { $lte: today },
+      displayEnd: { $gte: today },
+      status: "active",
+    });
+
+    res.json({
+      ...listing.toObject(),
+      deal: deal || null,
+    });
+
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch listing" });
+    console.error(err);
+
+    res.status(500).json({
+      error: "Failed to fetch listing",
+    });
   }
 };
 
+export const getPublishedListings = async (req, res) => {
+  try {
+    const listings = await Listing.find({ status: "published" });
+
+    const today = new Date();
+
+    const deals = await Deal.find({
+      displayFrom: { $lte: today },
+      displayEnd: { $gte: today },
+    });
+
+    const result = listings.map((l) => {
+      const deal = deals.find(
+        (d) => d.listingId.toString() === l._id.toString(),
+      );
+
+      return {
+        ...l._doc,
+        deal: deal || null,
+      };
+    });
+
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 // ADMIN – Delete listing
 
 export const deleteListing = async (req, res) => {
@@ -172,22 +225,52 @@ export const deleteListing = async (req, res) => {
 };
 
 export const updateDescription = async (req, res) => {
-  const listing = await Listing.findById(req.params.id);
+  try {
+    const listing = await Listing.findById(req.params.id);
 
-  listing.description = req.body.description;
+    if (!listing) {
+      return res.status(404).json({
+        success: false,
+        message: "Listing not found",
+      });
+    }
 
-  if (
-    listing.property?.title &&
-    listing.description &&
-    listing.photos.length > 0 &&
-    listing.location?.lat
-  ) {
-    listing.status = "published";
+    const { description } = req.body;
+
+    if (!description || !description.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Description cannot be empty",
+      });
+    }
+
+    listing.description = description;
+
+    if (
+      listing.property?.title &&
+      listing.description &&
+      listing.photos?.length > 0 &&
+      listing.location?.lat
+    ) {
+      listing.status = "published";
+    }
+
+    await listing.save();
+
+    return res.json({
+      success: true,
+      message: "Description updated successfully",
+      description: listing.description,
+    });
+  } catch (error) {
+    console.error("UPDATE DESCRIPTION ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update description",
+      error: error.message,
+    });
   }
-
-  await listing.save();
-
-  res.json({ success: true });
 };
 export const updateAmenities = async (req, res) => {
   await Listing.findByIdAndUpdate(req.params.id, {
@@ -702,11 +785,10 @@ export const getAllReviews = async (req, res) => {
 
         listingId: listing._id,
 
-        property: {
-          title: listing.property?.title || "",
-
-          image: listing.photos?.[0] || "",
-        },
+       property: {
+  title: listing.property?.title || "",
+  image: listing.photos?.[0]?.url || "",
+},
       });
     });
   });
@@ -803,9 +885,23 @@ export const toggleListingStatus = async (req, res) => {
   }
 };
 
-export const getPublishedListings = async (req, res) => {
+
+
+export const getCommunityListings =
+async (req, res) => {
+
   try {
-    const listings = await Listing.find({ status: "published" });
+
+    const community =
+      decodeURIComponent(
+        req.params.community
+      );
+
+    const listings =
+      await Listing.find({
+        status: "published",
+        "property.community": community,
+      });
 
     const today = new Date();
 
@@ -814,19 +910,49 @@ export const getPublishedListings = async (req, res) => {
       displayEnd: { $gte: today },
     });
 
-    const result = listings.map((l) => {
+    const result = listings.map((listing) => {
+
       const deal = deals.find(
-        (d) => d.listingId.toString() === l._id.toString(),
+        (d) =>
+          d.listingId.toString() ===
+          listing._id.toString()
       );
 
       return {
-        ...l._doc,
+        ...listing._doc,
         deal: deal || null,
       };
     });
 
     res.json(result);
+
+  } catch (err) {
+
+    res.status(500).json({
+      error: err.message,
+    });
+
+  }
+};
+export const getAllCommunities = async (req, res) => {
+  try {
+    const communities = await Listing.distinct(
+      "property.community",
+      {
+        status: "published",
+        "property.community": {
+          $exists: true,
+          $nin: ["", null],
+        },
+      }
+    );
+
+    res.status(200).json(communities);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Get all communities error:", error);
+
+    res.status(500).json({
+      message: "Failed to fetch communities",
+    });
   }
 };
