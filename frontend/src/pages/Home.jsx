@@ -6,7 +6,7 @@ import { FaFacebookF, FaInstagram, FaMapMarkerAlt } from "react-icons/fa";
 import { TbHomeSearch } from "react-icons/tb";
 import { FaHandHoldingUsd } from "react-icons/fa";
 import { Calendar, Home, MapPin } from "lucide-react";
-import heroVideo from "../assets/hero.mp4";
+// import heroVideo from "../assets/hero.mp4";
 // 👆 apni hero image ka correct path lagana
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -128,7 +128,7 @@ export default function Hero({ listingId }) {
           preload="auto"
           className="absolute inset-0 w-full h-full object-cover object-center"
         >
-          <source src={heroVideo} type="video/mp4" />
+          <source src="/public/hero.mp4" type="video/mp4" />
         </video>
 
         {/* ==========================
