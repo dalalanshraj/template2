@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Under Maintenance</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+font-family:'Inter',sans-serif;
+background:linear-gradient(135deg,#0f172a,#111827,#1e293b);
+color:#fff;
+min-height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+overflow:hidden;
+padding:20px;
+position:relative;
+}
+
+/* Animated Background */
+
+body::before,
+body::after{
+content:"";
+position:absolute;
+width:500px;
+height:500px;
+border-radius:50%;
+background:rgba(255,255,255,.05);
+filter:blur(40px);
+animation:float 12s infinite ease-in-out;
+}
+
+body::before{
+top:-150px;
+left:-150px;
+}
+
+body::after{
+bottom:-150px;
+right:-150px;
+animation-delay:6s;
+}
+
+@keyframes float{
+
+0%,100%{
+transform:translateY(0);
+}
+
+50%{
+transform:translateY(40px);
+}
+
+}
+
+.card{
+
+max-width:850px;
+width:100%;
+background:rgba(255,255,255,.08);
+backdrop-filter:blur(20px);
+padding:70px 50px;
+border-radius:25px;
+text-align:center;
+border:1px solid rgba(255,255,255,.12);
+box-shadow:0 30px 60px rgba(0,0,0,.35);
+
+}
+
+.icon{
+
+font-size:70px;
+margin-bottom:25px;
+
+}
+
+h1{
+
+font-family:'Playfair Display',serif;
+font-size:64px;
+line-height:1.1;
+margin-bottom:20px;
+
+}
+
+p{
+
+font-size:20px;
+color:rgba(255,255,255,.85);
+line-height:1.8;
+max-width:650px;
+margin:auto;
+
+}
+
+.divider{
+
+width:90px;
+height:3px;
+background:#fff;
+margin:35px auto;
+
+}
+
+.info{
+
+margin-top:40px;
+font-size:15px;
+letter-spacing:2px;
+text-transform:uppercase;
+color:rgba(255,255,255,.65);
+
+}
+
+.btn{
+
+display:inline-block;
+margin-top:45px;
+padding:16px 40px;
+border:2px solid #fff;
+color:#fff;
+text-decoration:none;
+border-radius:50px;
+transition:.35s;
+font-weight:600;
+
+}
+
+.btn:hover{
+
+background:#fff;
+color:#111827;
+
+}
+
+@media(max-width:768px){
+
+.card{
+
+padding:50px 30px;
+
+}
+
+h1{
+
+font-size:42px;
+
+}
+
+p{
+
+font-size:17px;
+
+}
+
+.icon{
+
+font-size:55px;
+
+}
+
+}
+
+@media(max-width:480px){
+
+h1{
+
+font-size:34px;
+
+}
+
+p{
+
+font-size:16px;
+
+}
+
+.btn{
+
+width:100%;
+
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<div class="icon">🚧</div>
+
+<h1>We're Under Maintenance</h1>
+
+<div class="divider"></div>
+
+<p>
+We're currently performing scheduled maintenance to improve your experience.
+Our website will be back online shortly. Thank you for your patience and understanding.
+</p>
+
+<div class="info">
+Please check back soon.
+</div>
+
+<a href="/" class="btn">
+Back to Home
+</a>
+
+</div>
+
+</body>
+</html>
